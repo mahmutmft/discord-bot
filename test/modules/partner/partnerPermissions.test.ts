@@ -55,11 +55,12 @@ describe('partner close permissions', () => {
     expect(mocks.getRolesProperty).not.toHaveBeenCalled();
   });
 
-  test('allows members with Manage Messages', async () => {
+  test('does not treat Manage Messages as a configured partner moderator', async () => {
     const member = createMember({ hasManageMessages: true });
+    mocks.getRolesProperty.mockResolvedValue(undefined);
 
     await expect(canClosePartnerListing(member, OWNER_ID, guild)).resolves.toBe(
-      true,
+      false,
     );
   });
 

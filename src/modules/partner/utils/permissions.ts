@@ -1,4 +1,4 @@
-import { type Guild, type GuildMember, PermissionFlagsBits } from 'discord.js';
+import { type Guild, type GuildMember } from 'discord.js';
 
 import { Role } from '@/common/schemas/Role.js';
 import { getRolesProperty } from '@/configuration/bot/index.js';
@@ -8,10 +8,7 @@ export const canClosePartnerListing = async (
   ownerId: string,
   guild: Guild,
 ) => {
-  if (
-    member.id === ownerId ||
-    member.permissions.has(PermissionFlagsBits.ManageMessages)
-  ) {
+  if (member.id === ownerId) {
     return true;
   }
 
