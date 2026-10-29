@@ -5,6 +5,7 @@ Discord bot for the [`FINKI Hub`](https://discord.gg/finki-studenti-810997107376
 ## Features
 
 - Slash commands for courses, rooms, office locations, staff, exam sessions, FAQ entries, links, help, and Anto quotes
+- Course teammate listings with opt-in interest threads and owner/moderator controls
 - LLM/chat-bot integration for `/ask`, `/prompt`, `/chat`, context-menu prompts, private chat threads, embeddings, model discovery, and FAQ/link lookup
 - Reply and thread-based chat continuation for LLM conversations
 - Per-guild configuration stored in `config/bot.json`, editable with `/config` commands

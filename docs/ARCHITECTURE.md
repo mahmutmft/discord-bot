@@ -194,6 +194,7 @@ The **modules** layer contains feature-specific functionality. Each module is se
 | `faq`     | Frequently asked questions           |
 | `help`    | Help command and documentation       |
 | `misc`    | Miscellaneous commands               |
+| `partner` | Course teammate-finding listings     |
 | `room`    | Room/channel management              |
 | `session` | Session management                   |
 | `staff`   | Staff-related features               |
