@@ -23,6 +23,7 @@ describe('interaction replies', () => {
   test('defers public chat commands but not private model listings', () => {
     expect(shouldDeferCommand('chat models')).toBe(false);
     expect(shouldDeferCommand('chat closest')).toBe(true);
+    expect(shouldDeferCommand('partner create')).toBe(false);
   });
 
   test('preserves privacy across split private replies', async () => {

@@ -14,6 +14,7 @@ import { name as listCommandsButtonId } from '@/modules/list/commands/button/lis
 import { name as listLinksButtonId } from '@/modules/list/commands/button/listLinks.js';
 import { name as listQuestionsButtonId } from '@/modules/list/commands/button/listQuestions.js';
 import { name as listCommandId } from '@/modules/list/commands/chat/list.js';
+import { name as partnerCommandId } from '@/modules/partner/commands/chat/partner.js';
 import { name as ticketListButtonId } from '@/modules/ticket/commands/button/ticketList.js';
 import { name as ticketCommandId } from '@/modules/ticket/commands/chat/ticket.js';
 import { commandErrors } from '@/translations/commands.js';
@@ -30,6 +31,7 @@ const nonDeferredCommands = new Set<string>([
   `${credentialsCommandId} delete`,
   `${credentialsCommandId} list`,
   `${credentialsCommandId} set`,
+  `${partnerCommandId} create`,
   `${ticketCommandId} list`,
   chatFeedbackButtonId,
   helpCommandId,
