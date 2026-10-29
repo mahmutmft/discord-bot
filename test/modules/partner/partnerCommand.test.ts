@@ -87,7 +87,7 @@ const createFixture = (overrides?: {
       overrides?.description === undefined
         ? DESCRIPTION
         : overrides.description,
-    needed: overrides?.needed === undefined ? 1 : overrides.needed,
+    partners: overrides?.needed === undefined ? 1 : overrides.needed,
   };
   const interaction = {
     channel,
@@ -138,9 +138,10 @@ describe('/partner create', () => {
           required: true,
         }),
         expect.objectContaining({
+          description: 'Колку тимски партнери бараш? (1-5)',
           max_value: 5,
           min_value: 1,
-          name: 'needed',
+          name: 'partners',
           required: true,
         }),
         expect.objectContaining({

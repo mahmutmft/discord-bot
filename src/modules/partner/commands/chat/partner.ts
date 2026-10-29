@@ -49,8 +49,8 @@ export const data = new SlashCommandBuilder()
       )
       .addIntegerOption((option) =>
         option
-          .setName('needed')
-          .setDescription('Број на потребни членови')
+          .setName('partners')
+          .setDescription('Колку тимски партнери бараш? (1-5)')
           .setRequired(true)
           .setMinValue(PARTNER_MIN_NEEDED)
           .setMaxValue(PARTNER_MAX_NEEDED),
@@ -74,7 +74,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   const parsed = PartnerListingInputSchema.safeParse({
     course: interaction.options.getString('course'),
     description: interaction.options.getString('description'),
-    needed: interaction.options.getInteger('needed'),
+    needed: interaction.options.getInteger('partners'),
   });
 
   if (!parsed.success) {
