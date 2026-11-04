@@ -191,7 +191,7 @@ describe('/partner create', () => {
     const command = data.toJSON();
     const create = command.options?.[0];
 
-    expect(create).toMatchObject({ name: 'create' });
+    expect(create).toMatchObject({ name: 'post' });
     expect(create && 'options' in create ? create.options : []).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

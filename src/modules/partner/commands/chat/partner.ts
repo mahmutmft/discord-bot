@@ -26,6 +26,7 @@ import {
   PartnerListingInputSchema,
 } from '@/modules/partner/schemas/PartnerListing.js';
 import { closePartnerListing } from '@/modules/partner/utils/closeListing.js';
+import { findPartnerListings } from '@/modules/partner/utils/findListings.js';
 import {
   getPartnerCourseKey,
   getPartnerInterestedCustomId,
@@ -45,8 +46,8 @@ export const data = new SlashCommandBuilder()
   .setDescription('Најди тимски партнер за проект')
   .addSubcommand((subcommand) =>
     subcommand
-      .setName('create')
-      .setDescription('Креирај оглас за тимски партнер')
+      .setName('post')
+      .setDescription('Објави оглас за тимски партнер')
       .addStringOption((option) =>
         option
           .setName('course')
@@ -69,6 +70,24 @@ export const data = new SlashCommandBuilder()
           .setRequired(true)
           .setMinLength(PARTNER_DESCRIPTION_MIN_LENGTH)
           .setMaxLength(PARTNER_DESCRIPTION_MAX_LENGTH),
+      ),
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName('find')
+      .setDescription('Пребарај активни огласи по предмет')
+      .addStringOption((option) =>
+        option
+          .setName('course')
+          .setDescription('Предмет')
+          .setRequired(true)
+          .setAutocomplete(true),
+      )
+      .addIntegerOption((option) =>
+        option
+          .setName('page')
+          .setDescription('Страница со резултати')
+          .setMinValue(1),
       ),
   )
   .addSubcommand((subcommand) =>
@@ -224,6 +243,11 @@ const executeClose = async (interaction: ChatInputCommandInteraction) => {
 
 export const execute = async (interaction: ChatInputCommandInteraction) => {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+  if (interaction.options.getSubcommand() === 'find') {
+    await findPartnerListings(interaction);
+    return;
+  }
 
   if (interaction.options.getSubcommand() === 'close') {
     await executeClose(interaction);
