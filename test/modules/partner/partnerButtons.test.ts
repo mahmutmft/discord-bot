@@ -37,8 +37,10 @@ vi.mock('@/modules/partner/utils/permissions.js', () => ({
 }));
 
 const COURSE_KEY = 'Abcdef123456';
+const BOT_ID = '999999999999999999';
 const OWNER_ID = '123456789012345678';
 const STUDENT_ID = '223456789012345678';
+const SECOND_STUDENT_ID = '323456789012345678';
 const VALID_ARGS = ['v2', OWNER_ID, COURSE_KEY, '1'];
 
 const createFixture = (userId = STUDENT_ID) => {
@@ -58,6 +60,7 @@ const createFixture = (userId = STUDENT_ID) => {
   );
   const guild = { id: 'guild-id' };
   const interaction = {
+    client: { user: { id: BOT_ID } },
     editReply,
     guild,
     message: {
@@ -93,12 +96,14 @@ const createFixture = (userId = STUDENT_ID) => {
   };
 };
 
-describe('partner listing buttons', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mocks.getMemberFromGuild.mockResolvedValue({ id: STUDENT_ID });
-    mocks.canClosePartnerListing.mockResolvedValue(true);
-  });
+const resetButtonMocks = () => {
+  vi.clearAllMocks();
+  mocks.getMemberFromGuild.mockResolvedValue({ id: STUDENT_ID });
+  mocks.canClosePartnerListing.mockResolvedValue(true);
+};
+
+describe('partner interest button', () => {
+  beforeEach(resetButtonMocks);
 
   test('adds an interested student to the persistent thread', async () => {
     const fixture = createFixture();
@@ -112,6 +117,9 @@ describe('partner listing buttons', () => {
       '323456789012345678',
     );
     expect(fixture.addMember).toHaveBeenCalledWith(STUDENT_ID);
+    expect(fixture.editMessage).toHaveBeenCalledWith({
+      components: [expect.anything()],
+    });
     expect(fixture.editReply).toHaveBeenCalledWith(
       expect.stringContaining('<#423456789012345678>'),
     );
@@ -143,6 +151,79 @@ describe('partner listing buttons', () => {
     );
   });
 
+  test('rejects interest after the requested capacity is full', async () => {
+    const fixture = createFixture();
+    fixture.fetchMembers.mockResolvedValue(
+      new Map([[SECOND_STUDENT_ID, { id: SECOND_STUDENT_ID }]]),
+    );
+    mocks.resolvePartnerThread.mockResolvedValue(fixture.thread);
+
+    await expressInterest(fixture.interaction, VALID_ARGS);
+
+    expect(fixture.addMember).not.toHaveBeenCalled();
+    expect(fixture.editMessage).toHaveBeenCalledWith({
+      components: [expect.anything()],
+    });
+    expect(fixture.editReply).toHaveBeenCalledWith(partnerErrors.listingFull);
+  });
+
+  test('excludes the owner and bot when counting occupied places', async () => {
+    const fixture = createFixture();
+    fixture.fetchMembers.mockResolvedValue(
+      new Map([
+        [BOT_ID, { id: BOT_ID }],
+        [OWNER_ID, { id: OWNER_ID }],
+      ]),
+    );
+    mocks.resolvePartnerThread.mockResolvedValue(fixture.thread);
+
+    await expressInterest(fixture.interaction, VALID_ARGS);
+
+    expect(fixture.addMember).toHaveBeenCalledWith(STUDENT_ID);
+    expect(fixture.editReply).toHaveBeenCalledWith(
+      expect.stringContaining('<#423456789012345678>'),
+    );
+  });
+
+  test('allows only one winner for the last place under concurrent clicks', async () => {
+    const first = createFixture(STUDENT_ID);
+    const second = createFixture(SECOND_STUDENT_ID);
+    const members = new Map<string, unknown>();
+    const addMember = vi.fn<(userId: string) => Promise<void>>(
+      async (userId) => {
+        await Promise.resolve();
+        members.set(userId, { id: userId });
+      },
+    );
+    const sharedThread = {
+      ...first.thread,
+      members: {
+        add: addMember,
+        fetch: async () => new Map(members),
+      },
+    };
+    mocks.resolvePartnerThread.mockResolvedValue(sharedThread);
+
+    await Promise.all([
+      expressInterest(first.interaction, VALID_ARGS),
+      expressInterest(second.interaction, VALID_ARGS),
+    ]);
+
+    expect(addMember).toHaveBeenCalledOnce();
+    const replies = [
+      ...first.editReply.mock.calls,
+      ...second.editReply.mock.calls,
+    ].map(([message]) => message);
+    expect(replies).toContain(partnerErrors.listingFull);
+    expect(
+      replies.some(
+        (message) =>
+          typeof message === 'string' &&
+          message.includes('<#423456789012345678>'),
+      ),
+    ).toBe(true);
+  });
+
   test.each([
     { archived: true, label: 'archived' },
     { label: 'locked', locked: true },
@@ -168,6 +249,20 @@ describe('partner listing buttons', () => {
       partnerErrors.invalidListing,
     );
   });
+
+  test('rejects malformed interest metadata', async () => {
+    const fixture = createFixture();
+
+    await expressInterest(fixture.interaction, ['broken']);
+
+    expect(fixture.editReply).toHaveBeenCalledWith(
+      partnerErrors.invalidListing,
+    );
+  });
+});
+
+describe('partner close action', () => {
+  beforeEach(resetButtonMocks);
 
   test('closes and disables a listing for an authorized member', async () => {
     const fixture = createFixture();
@@ -245,18 +340,11 @@ describe('partner listing buttons', () => {
     expect(mocks.resolvePartnerThread).not.toHaveBeenCalled();
   });
 
-  test.each([
-    { args: ['broken'], label: 'malformed metadata' },
-    { args: VALID_ARGS, label: 'a missing thread' },
-  ])('rejects $label', async ({ args, label }) => {
+  test('rejects a missing listing thread', async () => {
     const fixture = createFixture();
     mocks.resolvePartnerThread.mockResolvedValue(null);
 
-    if (label === 'malformed metadata') {
-      await expressInterest(fixture.interaction, args);
-    } else {
-      await closeListing(fixture.interaction, args);
-    }
+    await closeListing(fixture.interaction, VALID_ARGS);
 
     expect(fixture.editReply).toHaveBeenCalledWith(
       partnerErrors.invalidListing,

@@ -2,6 +2,7 @@ import { type ButtonInteraction } from 'discord.js';
 
 import { getPartnerListingComponents } from '@/modules/partner/components/components.js';
 import { PartnerActionArgumentsSchema } from '@/modules/partner/schemas/PartnerListing.js';
+import { withPartnerListingLock } from '@/modules/partner/utils/listingLock.js';
 import { resolvePartnerThread } from '@/modules/partner/utils/listings.js';
 import {
   partnerErrors,
@@ -10,6 +11,35 @@ import {
 } from '@/translations/partner.js';
 
 export const name = 'partnerInterested';
+
+type DisableJoinActionOptions = {
+  courseKey: string;
+  interaction: ButtonInteraction;
+  needed: number | undefined;
+  ownerId: string;
+};
+
+const disableJoinAction = async ({
+  courseKey,
+  interaction,
+  needed,
+  ownerId,
+}: DisableJoinActionOptions) => {
+  try {
+    await interaction.message.edit({
+      components: [
+        getPartnerListingComponents({
+          courseKey,
+          disabled: true,
+          needed,
+          ownerId,
+        }),
+      ],
+    });
+  } catch {
+    // Disabling stale or full controls is best-effort.
+  }
+};
 
 export const execute = async (
   interaction: ButtonInteraction,
@@ -37,31 +67,36 @@ export const execute = async (
   );
 
   if (thread === null || thread.archived || thread.locked) {
-    try {
-      await interaction.message.edit({
-        components: [
-          getPartnerListingComponents({
-            courseKey,
-            disabled: true,
-            needed,
-            ownerId,
-          }),
-        ],
-      });
-    } catch {
-      // Disabling stale controls is best-effort.
-    }
+    await disableJoinAction({ courseKey, interaction, needed, ownerId });
 
     await interaction.editReply(partnerErrors.invalidListing);
     return;
   }
 
-  const members = await thread.members.fetch();
-  if (members.has(interaction.user.id)) {
-    await interaction.editReply(partnerMessages.alreadyInterested);
-    return;
-  }
+  await withPartnerListingLock(interaction.message.id, async () => {
+    const members = await thread.members.fetch();
+    if (members.has(interaction.user.id)) {
+      await interaction.editReply(partnerMessages.alreadyInterested);
+      return;
+    }
 
-  await thread.members.add(interaction.user.id);
-  await interaction.editReply(partnerMessageFunctions.interested(thread.id));
+    let interestedCount = 0;
+    for (const memberId of members.keys()) {
+      if (memberId !== ownerId && memberId !== interaction.client.user.id) {
+        interestedCount += 1;
+      }
+    }
+
+    if (needed !== undefined && interestedCount >= needed) {
+      await disableJoinAction({ courseKey, interaction, needed, ownerId });
+      await interaction.editReply(partnerErrors.listingFull);
+      return;
+    }
+
+    await thread.members.add(interaction.user.id);
+    if (needed !== undefined && interestedCount + 1 >= needed) {
+      await disableJoinAction({ courseKey, interaction, needed, ownerId });
+    }
+    await interaction.editReply(partnerMessageFunctions.interested(thread.id));
+  });
 };
