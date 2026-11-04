@@ -255,14 +255,18 @@ describe('/partner create', () => {
         };
     const embed = listingPayload?.embeds[0]?.toJSON();
     const buttons = listingPayload?.components[0]?.toJSON().components ?? [];
-    const interestedButton = buttons[0] as undefined | { custom_id?: string };
+    const interestedButton = buttons[0] as
+      undefined | { custom_id?: string; label?: string };
     expect(buttons).toHaveLength(1);
     expect(interestedButton?.custom_id).toMatch(INTERESTED_BUTTON_ID_PATTERN);
+    expect(interestedButton?.label).toBe('Приклучи се во разговор');
+    expect(embed?.title).toBe('Оглас за тимски партнер');
     expect(embed?.description).toBe(DESCRIPTION);
     expect(embed?.fields).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: 'Предмет', value: COURSE }),
-        expect.objectContaining({ name: 'Студент', value: `<@${OWNER_ID}>` }),
+        expect.objectContaining({ name: 'Автор', value: `<@${OWNER_ID}>` }),
+        expect.objectContaining({ name: 'Потребни партнери', value: '1' }),
       ]),
     );
     const threadOptions = fixture.startThread.mock.calls[0]?.[0] as

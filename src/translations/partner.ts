@@ -1,7 +1,7 @@
 import { channelMention } from 'discord.js';
 
 export const partnerMessages = {
-  alreadyInterested: 'Веќе си додаден/а во разговорот за овој оглас.',
+  alreadyInterested: 'Веќе имаш пристап до разговорот за овој оглас.',
   listingClosed: 'Огласот е затворен.',
   threadWelcome:
     'Користете ја оваа нишка за да се запознаете, да ги договорите очекувањата и да го формирате тимот. Не споделувајте приватни контакт-податоци јавно.',
@@ -9,7 +9,7 @@ export const partnerMessages = {
 
 export const partnerMessageFunctions = {
   interested: (threadId: string) =>
-    `Додаден/а си во разговорот: ${channelMention(threadId)}`,
+    `Можеш да продолжиш во разговорот: ${channelMention(threadId)}`,
   listingCreated: (threadId: string) =>
     `Огласот е креиран: ${channelMention(threadId)}`,
 };

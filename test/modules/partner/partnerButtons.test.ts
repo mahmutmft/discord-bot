@@ -63,6 +63,7 @@ const createFixture = (userId = STUDENT_ID) => {
     message: {
       channelId: '323456789012345678',
       edit: editMessage,
+      embeds: [],
       id: '423456789012345678',
     },
     user: { id: userId },

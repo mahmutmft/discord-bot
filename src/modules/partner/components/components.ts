@@ -1,8 +1,11 @@
 import {
   ActionRowBuilder,
+  type APIEmbed,
   ButtonBuilder,
   ButtonStyle,
+  Colors,
   EmbedBuilder,
+  type JSONEncodable,
   userMention,
 } from 'discord.js';
 
@@ -36,9 +39,17 @@ export const getPartnerListingComponents = ({
     new ButtonBuilder()
       .setCustomId(actionId(PARTNER_INTERESTED_BUTTON_ID, ownerId, courseKey))
       .setDisabled(disabled)
-      .setLabel('Заинтересиран/а сум')
+      .setLabel('Приклучи се во разговор')
       .setStyle(ButtonStyle.Success),
   );
+
+export const getClosedPartnerListingEmbed = (
+  embed: APIEmbed | JSONEncodable<APIEmbed>,
+) =>
+  EmbedBuilder.from(embed)
+    .setColor(Colors.Greyple)
+    .setTitle('Затворен оглас за тимски партнер')
+    .setFooter({ text: 'Овој оглас повеќе не е активен.' });
 
 export const getPartnerListingEmbed = ({
   course,
@@ -47,17 +58,18 @@ export const getPartnerListingEmbed = ({
   ownerId,
 }: PartnerListingEmbedOptions) =>
   new EmbedBuilder()
-    .setTitle('🤝 Се бара тимски партнер')
+    .setColor(Colors.Blurple)
+    .setTitle('Оглас за тимски партнер')
     .setDescription(description)
     .addFields(
       { inline: true, name: 'Предмет', value: course },
-      { inline: true, name: 'Студент', value: userMention(ownerId) },
+      { inline: true, name: 'Автор', value: userMention(ownerId) },
       {
         inline: true,
-        name: 'Потребни членови',
+        name: 'Потребни партнери',
         value: needed.toString(),
       },
     )
     .setFooter({
-      text: 'Притисни „Заинтересиран/а сум“ за да се приклучиш во разговорот.',
+      text: 'Притисни „Приклучи се во разговор“ ако сакаш да учествуваш.',
     });

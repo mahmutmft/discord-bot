@@ -78,7 +78,7 @@ export const data = new SlashCommandBuilder()
   );
 
 const threadName = (course: string, displayName: string) =>
-  `🤝 ${course} — ${displayName}`.slice(0, 100);
+  `${course} — ${displayName}`.slice(0, 100);
 
 const executeCreate = async (interaction: ChatInputCommandInteraction) => {
   const parsed = PartnerListingInputSchema.safeParse({

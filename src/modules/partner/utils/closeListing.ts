@@ -1,6 +1,9 @@
 import { type Message, type ThreadChannel } from 'discord.js';
 
-import { getPartnerListingComponents } from '@/modules/partner/components/components.js';
+import {
+  getClosedPartnerListingEmbed,
+  getPartnerListingComponents,
+} from '@/modules/partner/components/components.js';
 
 type ClosePartnerListingOptions = {
   courseKey: string;
@@ -21,6 +24,7 @@ export const closePartnerListing = async ({
   if (!thread.archived) {
     await thread.setArchived(true, 'Partner finder listing closed');
   }
+  const currentEmbed = listingMessage.embeds[0];
   await listingMessage.edit({
     components: [
       getPartnerListingComponents({
@@ -29,5 +33,8 @@ export const closePartnerListing = async ({
         ownerId,
       }),
     ],
+    ...(currentEmbed !== undefined && {
+      embeds: [getClosedPartnerListingEmbed(currentEmbed)],
+    }),
   });
 };
