@@ -31,6 +31,7 @@ const nonDeferredCommands = new Set<string>([
   `${credentialsCommandId} delete`,
   `${credentialsCommandId} list`,
   `${credentialsCommandId} set`,
+  `${partnerCommandId} close`,
   `${partnerCommandId} create`,
   `${ticketCommandId} list`,
   chatFeedbackButtonId,

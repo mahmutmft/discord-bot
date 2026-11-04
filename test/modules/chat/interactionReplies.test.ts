@@ -24,6 +24,7 @@ describe('interaction replies', () => {
     expect(shouldDeferCommand('chat models')).toBe(false);
     expect(shouldDeferCommand('chat closest')).toBe(true);
     expect(shouldDeferCommand('partner create')).toBe(false);
+    expect(shouldDeferCommand('partner close')).toBe(false);
   });
 
   test('preserves privacy across split private replies', async () => {

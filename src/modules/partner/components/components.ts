@@ -7,7 +7,6 @@ import {
 } from 'discord.js';
 
 import {
-  PARTNER_CLOSE_BUTTON_ID,
   PARTNER_COMPONENT_VERSION,
   PARTNER_INTERESTED_BUTTON_ID,
 } from '../constants.js';
@@ -39,11 +38,6 @@ export const getPartnerListingComponents = ({
       .setDisabled(disabled)
       .setLabel('Заинтересиран/а сум')
       .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
-      .setCustomId(actionId(PARTNER_CLOSE_BUTTON_ID, ownerId, courseKey))
-      .setDisabled(disabled)
-      .setLabel('Затвори оглас')
-      .setStyle(ButtonStyle.Danger),
   );
 
 export const getPartnerListingEmbed = ({

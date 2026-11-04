@@ -8,12 +8,12 @@ import {
 } from 'discord.js';
 import { createHash } from 'node:crypto';
 
-import { PARTNER_CLOSE_BUTTON_ID } from '../constants.js';
+import { PARTNER_INTERESTED_BUTTON_ID } from '../constants.js';
 
 export const getPartnerCourseKey = (course: string) =>
   createHash('sha256').update(course).digest('base64url').slice(0, 12);
 
-export const getPartnerCloseCustomId = (
+export const getPartnerInterestedCustomId = (
   message: Pick<Message, 'components'>,
 ): null | string => {
   for (const row of message.components) {
@@ -24,7 +24,7 @@ export const getPartnerCloseCustomId = (
     for (const component of row.components) {
       if (
         component.type === ComponentType.Button &&
-        component.customId?.startsWith(`${PARTNER_CLOSE_BUTTON_ID}:`)
+        component.customId?.startsWith(`${PARTNER_INTERESTED_BUTTON_ID}:`)
       ) {
         return component.customId;
       }
@@ -39,7 +39,7 @@ export const hasActivePartnerListing = async (
   ownerId: string,
   courseKey: string,
 ): Promise<boolean> => {
-  const expectedId = `${PARTNER_CLOSE_BUTTON_ID}:v1:${ownerId}:${courseKey}`;
+  const expectedId = `${PARTNER_INTERESTED_BUTTON_ID}:v1:${ownerId}:${courseKey}`;
   const { threads } = await channel.threads.fetchActive();
 
   for (const thread of threads.values()) {
@@ -51,7 +51,7 @@ export const hasActivePartnerListing = async (
       const starterMessage = await thread.fetchStarterMessage();
       if (
         starterMessage !== null &&
-        getPartnerCloseCustomId(starterMessage) === expectedId
+        getPartnerInterestedCustomId(starterMessage) === expectedId
       ) {
         return true;
       }

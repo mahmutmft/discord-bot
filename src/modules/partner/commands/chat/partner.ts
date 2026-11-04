@@ -7,6 +7,7 @@ import {
 } from 'discord.js';
 
 import { logger } from '@/common/logger/index.js';
+import { getMemberFromGuild } from '@/common/utils/guild.js';
 import { errorCategory } from '@/common/utils/safeError.js';
 import { getCourse } from '@/modules/course/utils/data.js';
 import { getClosestCourse } from '@/modules/course/utils/search.js';
@@ -20,11 +21,17 @@ import {
   PARTNER_MAX_NEEDED,
   PARTNER_MIN_NEEDED,
 } from '@/modules/partner/constants.js';
-import { PartnerListingInputSchema } from '@/modules/partner/schemas/PartnerListing.js';
+import {
+  PartnerActionArgumentsSchema,
+  PartnerListingInputSchema,
+} from '@/modules/partner/schemas/PartnerListing.js';
+import { closePartnerListing } from '@/modules/partner/utils/closeListing.js';
 import {
   getPartnerCourseKey,
+  getPartnerInterestedCustomId,
   hasActivePartnerListing,
 } from '@/modules/partner/utils/listings.js';
+import { canClosePartnerListing } from '@/modules/partner/utils/permissions.js';
 import {
   partnerErrors,
   partnerMessageFunctions,
@@ -63,14 +70,17 @@ export const data = new SlashCommandBuilder()
           .setMinLength(PARTNER_DESCRIPTION_MIN_LENGTH)
           .setMaxLength(PARTNER_DESCRIPTION_MAX_LENGTH),
       ),
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName('close')
+      .setDescription('Затвори го активниот оглас во оваа нишка'),
   );
 
 const threadName = (course: string, displayName: string) =>
   `🤝 ${course} — ${displayName}`.slice(0, 100);
 
-export const execute = async (interaction: ChatInputCommandInteraction) => {
-  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
+const executeCreate = async (interaction: ChatInputCommandInteraction) => {
   const parsed = PartnerListingInputSchema.safeParse({
     course: interaction.options.getString('course'),
     description: interaction.options.getString('description'),
@@ -153,4 +163,67 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
     await interaction.editReply(partnerErrors.listingCreationFailed);
   }
+};
+
+const executeClose = async (interaction: ChatInputCommandInteraction) => {
+  const { channel, guild } = interaction;
+
+  if (
+    guild === null ||
+    channel?.type !== ChannelType.PublicThread ||
+    channel.parentId === null
+  ) {
+    await interaction.editReply(partnerErrors.closeInvalidChannel);
+    return;
+  }
+
+  let listingMessage;
+  try {
+    listingMessage = await channel.fetchStarterMessage();
+  } catch {
+    listingMessage = null;
+  }
+
+  const customId =
+    listingMessage === null
+      ? null
+      : getPartnerInterestedCustomId(listingMessage);
+  const parsed = PartnerActionArgumentsSchema.safeParse(
+    customId?.split(':').slice(1),
+  );
+
+  if (listingMessage === null || !parsed.success) {
+    await interaction.editReply(partnerErrors.invalidListing);
+    return;
+  }
+
+  const [, ownerId, courseKey] = parsed.data;
+  const member = await getMemberFromGuild(interaction.user.id, guild);
+
+  if (
+    member === null ||
+    !(await canClosePartnerListing(member, ownerId, guild))
+  ) {
+    await interaction.editReply(partnerErrors.listingNoPermission);
+    return;
+  }
+
+  await closePartnerListing({
+    courseKey,
+    listingMessage,
+    ownerId,
+    thread: channel,
+  });
+  await interaction.editReply(partnerMessages.listingClosed);
+};
+
+export const execute = async (interaction: ChatInputCommandInteraction) => {
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+  if (interaction.options.getSubcommand() === 'close') {
+    await executeClose(interaction);
+    return;
+  }
+
+  await executeCreate(interaction);
 };

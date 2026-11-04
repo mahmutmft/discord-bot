@@ -7,8 +7,8 @@ import {
 import { describe, expect, test, vi } from 'vitest';
 
 import {
-  getPartnerCloseCustomId,
   getPartnerCourseKey,
+  getPartnerInterestedCustomId,
   hasActivePartnerListing,
   resolvePartnerThread,
 } from '@/modules/partner/utils/listings.js';
@@ -16,10 +16,10 @@ import {
 const COURSE = 'Тимски проект';
 const COURSE_KEY = getPartnerCourseKey(COURSE);
 const OWNER_ID = '123456789012345678';
-const CLOSE_ID = `partnerClose:v1:${OWNER_ID}:${COURSE_KEY}`;
+const INTERESTED_ID = `partnerInterested:v1:${OWNER_ID}:${COURSE_KEY}`;
 const COURSE_KEY_PATTERN = /^[\w-]{12}$/u;
 
-const messageWithCloseButton = (customId = CLOSE_ID) =>
+const messageWithInterestedButton = (customId = INTERESTED_ID) =>
   ({
     components: [
       {
@@ -36,17 +36,21 @@ describe('partner listing persistence', () => {
     expect(getPartnerCourseKey('Самостоен проект')).not.toBe(COURSE_KEY);
   });
 
-  test('extracts only the partner close metadata', () => {
-    expect(getPartnerCloseCustomId(messageWithCloseButton())).toBe(CLOSE_ID);
+  test('extracts only the partner interest metadata', () => {
+    expect(getPartnerInterestedCustomId(messageWithInterestedButton())).toBe(
+      INTERESTED_ID,
+    );
     expect(
-      getPartnerCloseCustomId(messageWithCloseButton('other:v1:value')),
+      getPartnerInterestedCustomId(
+        messageWithInterestedButton('other:v1:value'),
+      ),
     ).toBeNull();
   });
 
   test('finds an active listing from Discord thread state', async () => {
     const fetchStarterMessage = vi.fn<
       () => Promise<Pick<Message, 'components'>>
-    >(async () => messageWithCloseButton());
+    >(async () => messageWithInterestedButton());
     const channel = {
       id: 'channel-id',
       threads: {
@@ -101,8 +105,8 @@ describe('partner listing persistence', () => {
               'unrelated',
               {
                 fetchStarterMessage: async () =>
-                  messageWithCloseButton(
-                    'partnerClose:v1:999999999999999999:Abcdef123456',
+                  messageWithInterestedButton(
+                    'partnerInterested:v1:999999999999999999:Abcdef123456',
                   ),
                 locked: false,
                 parentId: 'channel-id',

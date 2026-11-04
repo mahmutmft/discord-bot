@@ -1,8 +1,8 @@
 import { type ButtonInteraction } from 'discord.js';
 
 import { getMemberFromGuild } from '@/common/utils/guild.js';
-import { getPartnerListingComponents } from '@/modules/partner/components/components.js';
 import { PartnerActionArgumentsSchema } from '@/modules/partner/schemas/PartnerListing.js';
+import { closePartnerListing } from '@/modules/partner/utils/closeListing.js';
 import { resolvePartnerThread } from '@/modules/partner/utils/listings.js';
 import { canClosePartnerListing } from '@/modules/partner/utils/permissions.js';
 import { partnerErrors, partnerMessages } from '@/translations/partner.js';
@@ -43,20 +43,11 @@ export const execute = async (
     return;
   }
 
-  if (!thread.locked) {
-    await thread.setLocked(true, 'Partner finder listing closed');
-  }
-  if (!thread.archived) {
-    await thread.setArchived(true, 'Partner finder listing closed');
-  }
-  await interaction.message.edit({
-    components: [
-      getPartnerListingComponents({
-        courseKey,
-        disabled: true,
-        ownerId,
-      }),
-    ],
+  await closePartnerListing({
+    courseKey,
+    listingMessage: interaction.message,
+    ownerId,
+    thread,
   });
   await interaction.editReply(partnerMessages.listingClosed);
 };

@@ -17,6 +17,8 @@ export const partnerMessageFunctions = {
 export const partnerErrors = {
   activeListingExists: 'Веќе имаш активен оглас за овој предмет во овој канал.',
   cannotJoinOwnListing: 'Не можеш да се пријавиш на сопствениот оглас.',
+  closeInvalidChannel:
+    'Командата за затворање може да се користи само во нишката на огласот.',
   courseNotFound: 'Предметот не постои или податоците не се достапни.',
   invalidChannel:
     'Командата може да се користи само во текстуален канал во категорија за предмет.',
