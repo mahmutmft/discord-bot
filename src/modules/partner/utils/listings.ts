@@ -9,6 +9,7 @@ import {
 import { createHash } from 'node:crypto';
 
 import { PARTNER_INTERESTED_BUTTON_ID } from '../constants.js';
+import { PartnerActionArgumentsSchema } from '../schemas/PartnerListing.js';
 
 export const getPartnerCourseKey = (course: string) =>
   createHash('sha256').update(course).digest('base64url').slice(0, 12);
@@ -39,7 +40,6 @@ export const hasActivePartnerListing = async (
   ownerId: string,
   courseKey: string,
 ): Promise<boolean> => {
-  const expectedId = `${PARTNER_INTERESTED_BUTTON_ID}:v1:${ownerId}:${courseKey}`;
   const { threads } = await channel.threads.fetchActive();
 
   for (const thread of threads.values()) {
@@ -49,9 +49,17 @@ export const hasActivePartnerListing = async (
 
     try {
       const starterMessage = await thread.fetchStarterMessage();
+      const customId =
+        starterMessage === null
+          ? null
+          : getPartnerInterestedCustomId(starterMessage);
+      const parsed = PartnerActionArgumentsSchema.safeParse(
+        customId?.split(':').slice(1),
+      );
       if (
-        starterMessage !== null &&
-        getPartnerInterestedCustomId(starterMessage) === expectedId
+        parsed.success &&
+        parsed.data[1] === ownerId &&
+        parsed.data[2] === courseKey
       ) {
         return true;
       }

@@ -123,7 +123,11 @@ const executeCreate = async (interaction: ChatInputCommandInteraction) => {
     listingMessage = await channel.send({
       allowedMentions: { parse: [] },
       components: [
-        getPartnerListingComponents({ courseKey, ownerId: user.id }),
+        getPartnerListingComponents({
+          courseKey,
+          needed: parsed.data.needed,
+          ownerId: user.id,
+        }),
       ],
       embeds: [
         getPartnerListingEmbed({
@@ -197,7 +201,7 @@ const executeClose = async (interaction: ChatInputCommandInteraction) => {
     return;
   }
 
-  const [, ownerId, courseKey] = parsed.data;
+  const [, ownerId, courseKey, needed] = parsed.data;
   const member = await getMemberFromGuild(interaction.user.id, guild);
 
   if (
@@ -211,6 +215,7 @@ const executeClose = async (interaction: ChatInputCommandInteraction) => {
   await closePartnerListing({
     courseKey,
     listingMessage,
+    needed,
     ownerId,
     thread: channel,
   });

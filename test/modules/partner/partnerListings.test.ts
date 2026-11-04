@@ -16,7 +16,7 @@ import {
 const COURSE = 'Тимски проект';
 const COURSE_KEY = getPartnerCourseKey(COURSE);
 const OWNER_ID = '123456789012345678';
-const INTERESTED_ID = `partnerInterested:v1:${OWNER_ID}:${COURSE_KEY}`;
+const INTERESTED_ID = `partnerInterested:v2:${OWNER_ID}:${COURSE_KEY}:1`;
 const COURSE_KEY_PATTERN = /^[\w-]{12}$/u;
 
 const messageWithInterestedButton = (customId = INTERESTED_ID) =>
@@ -106,7 +106,7 @@ describe('partner listing persistence', () => {
               {
                 fetchStarterMessage: async () =>
                   messageWithInterestedButton(
-                    'partnerInterested:v1:999999999999999999:Abcdef123456',
+                    'partnerInterested:v2:999999999999999999:Abcdef123456:1',
                   ),
                 locked: false,
                 parentId: 'channel-id',

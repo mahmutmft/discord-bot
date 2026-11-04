@@ -39,7 +39,7 @@ vi.mock('@/modules/partner/utils/permissions.js', () => ({
 const COURSE_KEY = 'Abcdef123456';
 const OWNER_ID = '123456789012345678';
 const STUDENT_ID = '223456789012345678';
-const VALID_ARGS = ['v1', OWNER_ID, COURSE_KEY];
+const VALID_ARGS = ['v2', OWNER_ID, COURSE_KEY, '1'];
 
 const createFixture = (userId = STUDENT_ID) => {
   const editMessage = vi.fn<(payload: unknown) => Promise<void>>(

@@ -21,7 +21,7 @@ export const execute = async (
     return;
   }
 
-  const [, ownerId, courseKey] = parsed.data;
+  const [, ownerId, courseKey, needed] = parsed.data;
   const member = await getMemberFromGuild(interaction.user.id, guild);
 
   if (
@@ -46,6 +46,7 @@ export const execute = async (
   await closePartnerListing({
     courseKey,
     listingMessage: interaction.message,
+    needed,
     ownerId,
     thread,
   });

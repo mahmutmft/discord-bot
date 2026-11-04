@@ -8,6 +8,7 @@ import {
 type ClosePartnerListingOptions = {
   courseKey: string;
   listingMessage: Message;
+  needed: number | undefined;
   ownerId: string;
   thread: ThreadChannel;
 };
@@ -15,6 +16,7 @@ type ClosePartnerListingOptions = {
 export const closePartnerListing = async ({
   courseKey,
   listingMessage,
+  needed,
   ownerId,
   thread,
 }: ClosePartnerListingOptions) => {
@@ -30,6 +32,7 @@ export const closePartnerListing = async ({
       getPartnerListingComponents({
         courseKey,
         disabled: true,
+        needed,
         ownerId,
       }),
     ],

@@ -23,7 +23,7 @@ export const execute = async (
     return;
   }
 
-  const [, ownerId, courseKey] = parsed.data;
+  const [, ownerId, courseKey, needed] = parsed.data;
 
   if (interaction.user.id === ownerId) {
     await interaction.editReply(partnerErrors.cannotJoinOwnListing);
@@ -43,6 +43,7 @@ export const execute = async (
           getPartnerListingComponents({
             courseKey,
             disabled: true,
+            needed,
             ownerId,
           }),
         ],

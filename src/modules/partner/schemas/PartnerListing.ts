@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import {
+  PARTNER_COMPONENT_LEGACY_VERSION,
   PARTNER_COMPONENT_VERSION,
   PARTNER_DESCRIPTION_MAX_LENGTH,
   PARTNER_DESCRIPTION_MIN_LENGTH,
@@ -20,10 +21,21 @@ export const PartnerListingInputSchema = z.object({
 
 export type PartnerListingInput = z.infer<typeof PartnerListingInputSchema>;
 
-export const PartnerActionArgumentsSchema = z.tuple([
-  z.literal(PARTNER_COMPONENT_VERSION),
-  z.string().regex(/^\d{17,20}$/u),
-  z.string().regex(/^[\w-]{12}$/u),
+const ownerIdSchema = z.string().regex(/^\d{17,20}$/u);
+const courseKeySchema = z.string().regex(/^[\w-]{12}$/u);
+
+export const PartnerActionArgumentsSchema = z.union([
+  z.tuple([
+    z.literal(PARTNER_COMPONENT_LEGACY_VERSION),
+    ownerIdSchema,
+    courseKeySchema,
+  ]),
+  z.tuple([
+    z.literal(PARTNER_COMPONENT_VERSION),
+    ownerIdSchema,
+    courseKeySchema,
+    z.coerce.number().int().min(PARTNER_MIN_NEEDED).max(PARTNER_MAX_NEEDED),
+  ]),
 ]);
 
 export type PartnerActionArguments = z.infer<

@@ -178,7 +178,7 @@ const resetPartnerCommandMocks = () => {
   mocks.hasActivePartnerListing.mockResolvedValue(false);
   mocks.getMemberFromGuild.mockResolvedValue({ id: OWNER_ID });
   mocks.getPartnerInterestedCustomId.mockReturnValue(
-    `partnerInterested:v1:${OWNER_ID}:${COURSE_KEY}`,
+    `partnerInterested:v2:${OWNER_ID}:${COURSE_KEY}:1`,
   );
   mocks.canClosePartnerListing.mockResolvedValue(true);
   mocks.closePartnerListing.mockResolvedValue();
@@ -391,6 +391,7 @@ describe('/partner close', () => {
     expect(mocks.closePartnerListing).toHaveBeenCalledWith({
       courseKey: COURSE_KEY,
       listingMessage: fixture.listingMessage,
+      needed: 1,
       ownerId: OWNER_ID,
       thread: fixture.channel,
     });
